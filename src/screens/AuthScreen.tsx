@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { colors, fonts } from '../theme';
 
 export function AuthScreen() {
-  const { login, register } = useApp();
+  const { login, register, colors: themeColors } = useApp();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,11 +20,11 @@ export function AuthScreen() {
     if (message) setError(message);
   }
 
-  return <SafeAreaView style={styles.safe}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-    <View style={styles.brand}><View style={styles.mark}><Text style={styles.markText}>✓</Text></View><Text style={styles.kicker}>TASKFLOW</Text><Text style={styles.title}>Make room for{ '\n' }what matters.</Text><Text style={styles.subtitle}>A calm place to plan your day and finish the important things.</Text></View>
-    <View style={styles.form}><Text style={styles.formTitle}>{mode === 'login' ? 'Welcome back' : 'Create your account'}</Text>
-      <TextInput autoCapitalize="none" keyboardType="email-address" placeholder="Email address" placeholderTextColor={colors.muted} value={email} onChangeText={setEmail} style={styles.input} />
-      <TextInput secureTextEntry placeholder="Password" placeholderTextColor={colors.muted} value={password} onChangeText={setPassword} style={styles.input} />
+  return <SafeAreaView style={[styles.safe, { backgroundColor: themeColors.paper }]}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+    <View style={styles.brand}><View style={styles.mark}><Text style={styles.markText}>✓</Text></View><Text style={styles.kicker}>TASKFLOW</Text><Text style={[styles.title, { color: themeColors.ink }]}>Make room for{ '\n' }what matters.</Text><Text style={[styles.subtitle, { color: themeColors.muted }]}>A calm place to plan your day and finish the important things.</Text></View>
+    <View style={styles.form}><Text style={[styles.formTitle, { color: themeColors.ink }]}>{mode === 'login' ? 'Welcome back' : 'Create your account'}</Text>
+      <TextInput autoCapitalize="none" keyboardType="email-address" placeholder="Email address" placeholderTextColor={themeColors.muted} value={email} onChangeText={setEmail} style={[styles.input, { backgroundColor: themeColors.white, borderColor: themeColors.line, color: themeColors.ink }]} />
+      <TextInput secureTextEntry placeholder="Password" placeholderTextColor={themeColors.muted} value={password} onChangeText={setPassword} style={[styles.input, { backgroundColor: themeColors.white, borderColor: themeColors.line, color: themeColors.ink }]} />
       {!!error && <Text style={styles.error}>{error}</Text>}
       <Pressable onPress={submit} disabled={busy} style={({ pressed }) => [styles.button, pressed && styles.pressed]}><Text style={styles.buttonText}>{busy ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Create account'}</Text></Pressable>
       <Pressable onPress={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}><Text style={styles.switch}>{mode === 'login' ? 'New here? Create an account' : 'Already have an account? Log in'}</Text></Pressable>
