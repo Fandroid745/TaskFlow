@@ -1,4 +1,5 @@
 export type Priority = 'low' | 'medium' | 'high';
+export type ThemeMode = 'system' | 'light' | 'dark';
 
 export type Task = {
   id: string;

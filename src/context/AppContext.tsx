@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Task, User } from '../types';
+import { useColorScheme } from 'react-native';
+import { Task, ThemeMode, User } from '../types';
 import {
   checkPassword,
   loadTasks,
+  loadTheme,
   loadUser,
   saveTasks,
   saveUser,
+  saveTheme,
 } from '../services/storage';
+import { getThemeColors } from '../theme';
 
 const DEMO_TASKS: Task[] = [
   {
@@ -31,6 +35,10 @@ type AppContextValue = {
   user: User | null;
   tasks: Task[];
   ready: boolean;
+  themeMode: ThemeMode;
+  isDark: boolean;
+  colors: ReturnType<typeof getThemeColors>;
+  setThemeMode: (mode: ThemeMode) => void;
   register: (email: string, password: string) => Promise<string | null>;
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => void;
@@ -45,11 +53,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [ready, setReady] = useState(false);
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
+  const systemScheme = useColorScheme();
+  const isDark = themeMode === 'dark' || (themeMode === 'system' && systemScheme === 'dark');
+  const themeColors = getThemeColors(isDark);
 
   useEffect(() => {
-    Promise.all([loadUser(), loadTasks()]).then(([storedUser, storedTasks]) => {
+    Promise.all([loadUser(), loadTasks(), loadTheme()]).then(([storedUser, storedTasks, storedTheme]) => {
       setUser(storedUser);
       setTasks(storedTasks.length ? storedTasks : DEMO_TASKS);
+      setThemeModeState(storedTheme);
       setReady(true);
     });
   }, []);
@@ -90,8 +103,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTasks(current => current.filter(task => task.id !== id));
   }
 
+  function setThemeMode(mode: ThemeMode) {
+    setThemeModeState(mode);
+    saveTheme(mode);
+  }
+
   return (
-    <AppContext.Provider value={{ user, tasks, ready, register, login, logout: () => setUser(null), addTask, toggleTask, deleteTask }}>
+    <AppContext.Provider value={{ user, tasks, ready, themeMode, isDark, colors: themeColors, setThemeMode, register, login, logout: () => setUser(null), addTask, toggleTask, deleteTask }}>
       {children}
     </AppContext.Provider>
   );

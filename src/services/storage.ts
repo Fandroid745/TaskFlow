@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Task, User } from '../types';
+import { Task, ThemeMode, User } from '../types';
 
 const KEYS = {
   user: '@taskflow/user',
   password: '@taskflow/password',
   tasks: '@taskflow/tasks',
+  theme: '@taskflow/theme',
 };
 
 export async function loadUser(): Promise<User | null> {
@@ -30,4 +31,13 @@ export async function loadTasks(): Promise<Task[]> {
 
 export async function saveTasks(tasks: Task[]) {
   await AsyncStorage.setItem(KEYS.tasks, JSON.stringify(tasks));
+}
+
+export async function loadTheme(): Promise<ThemeMode> {
+  const value = await AsyncStorage.getItem(KEYS.theme);
+  return value === 'light' || value === 'dark' ? value : 'system';
+}
+
+export async function saveTheme(theme: ThemeMode) {
+  await AsyncStorage.setItem(KEYS.theme, theme);
 }
