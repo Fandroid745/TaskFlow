@@ -20,7 +20,7 @@ export function AuthScreen() {
     if (message) setError(message);
   }
 
-  return <SafeAreaView style={styles.safe}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+  return <SafeAreaView style={styles.safe}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
     <View style={styles.brand}><View style={styles.mark}><Text style={styles.markText}>✓</Text></View><Text style={styles.kicker}>TASKFLOW</Text><Text style={styles.title}>Make room for{ '\n' }what matters.</Text><Text style={styles.subtitle}>A calm place to plan your day and finish the important things.</Text></View>
     <View style={styles.form}><Text style={styles.formTitle}>{mode === 'login' ? 'Welcome back' : 'Create your account'}</Text>
       <TextInput autoCapitalize="none" keyboardType="email-address" placeholder="Email address" placeholderTextColor={colors.muted} value={email} onChangeText={setEmail} style={styles.input} />
