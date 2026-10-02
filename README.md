@@ -1,157 +1,146 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
-
-# Getting Started
-
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
-
 # TaskFlow
 
-TaskFlow is an Android-first React Native CLI app written in TypeScript. It demonstrates account registration, login, task creation, deadlines, priorities, filtering, completion, deletion, and local persistence.
+TaskFlow is an Android-first task management application built with React Native CLI and TypeScript. It supports user authentication, task management, priorities, due dates, filtering, and persistent storage.
 
-## Run on Android
+## Features
 
-Prerequisites: Node 22+, Android Studio, an Android SDK, and either an emulator or a USB-connected device.
+- User registration and login
+- Create tasks with a title, description, due date and time, and priority
+- Mark tasks as completed
+- Delete tasks
+- Filter tasks by status and priority
+- Persist local task and theme data with AsyncStorage
+- Store authenticated tasks per user in MongoDB
+- JWT-based sessions
+- Password hashing with bcryptjs
+- REST API backend
+- Responsive Android-first UI
+
+The app displays two demo tasks when there is no authenticated session and no cached task data. Once a user is authenticated, task CRUD operations use the API. AsyncStorage retains cached tasks and settings for offline fallback.
+
+## Tech Stack
+
+### Mobile
+
+- React Native CLI
+- TypeScript
+- React Context API
+- AsyncStorage
+- React Navigation
+- React Native components
+
+### Backend
+
+- Node.js
+- Express.js
+- MongoDB with Mongoose
+- JWT
+- bcryptjs
+- dotenv
+
+## Architecture
+
+- Context-based shared state management in `src/context/AppContext.tsx`
+- Typed domain models in `src/types/`
+- REST client and persistence adapters in `src/services/`
+- User-scoped CRUD operations enforced by JWT middleware and MongoDB queries
+- Separate mobile and API packages with their own `package.json` files
+
+## Project Structure
+
+```text
+TaskFlow/
+├── android/
+├── ios/
+├── src/
+│   ├── context/
+│   ├── screens/
+│   ├── services/
+│   ├── theme/
+│   └── types/
+├── server/
+│   ├── src/
+│   │   ├── auth.ts
+│   │   ├── db.ts
+│   │   ├── index.ts
+│   │   └── models.ts
+│   ├── .env.example
+│   └── package.json
+├── App.tsx
+└── package.json
+```
+
+## Running the Project
+
+### Prerequisites
+
+- Node.js 22.11 or newer
+- Android Studio, an Android SDK, and an Android emulator or USB-connected device
+- MongoDB running locally or a reachable MongoDB deployment
+- React Native environment dependencies from the [official setup guide](https://reactnative.dev/docs/set-up-your-environment)
+
+### Mobile App
+
+From the repository root:
 
 ```bash
 npm install
 npm start
 ```
 
-In a second terminal:
+In another terminal, build and install the Android app:
 
 ```bash
 npm run android
 ```
 
-You can build the APK without an emulator:
+Run the mobile tests or linter with:
+
+```bash
+npm test
+npm run lint
+```
+
+### Backend
+
+Create the server environment file and install the API dependencies:
+
+```bash
+cd server
+cp .env.example .env
+npm install
+```
+
+The default `.env.example` configuration expects MongoDB at `mongodb://127.0.0.1:27017/taskflow` and starts the API on port `4000`. Set a long, random `JWT_SECRET` in `server/.env` before using the API outside local development.
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The API health endpoint is available at `http://localhost:4000/health`.
+
+### Configure the Mobile API URL
+
+Set `API_BASE_URL` in `src/services/api.ts` to an address reachable from the device:
+
+- Android emulator: `http://10.0.2.2:4000`
+- Physical Android device: `http://<your-computer-LAN-IP>:4000`
+
+The current source value is a machine-specific LAN address, so it may need to be changed after cloning. For a physical device, keep the phone and computer on the same network and allow port `4000` through the computer's firewall if necessary.
+
+## Build APK
+
+From the repository root:
 
 ```bash
 cd android
 ./gradlew assembleDebug
 ```
 
-## Learn the project
+The debug APK is generated under `android/app/build/outputs/apk/debug/`.
 
-- `App.tsx` is the entry point. It chooses between authentication and the task navigation stack.
-- `src/context/AppContext.tsx` is the shared state boundary, similar to a ViewModel shared by screens through React Context.
-- `src/screens` contains the auth, task-list, and add-task screens.
-- `src/services/storage.ts` contains the persistence adapter using AsyncStorage.
-- `src/types` contains the domain types used across the app.
+## Reset Demo Data
 
-The UI uses React Native primitives such as `View`, `Text`, `TextInput`, `Pressable`, and `FlatList`. State updates replace much of the event-listener wiring you may know from Android Views.
-
-## Reset demo data
-
-Uninstall the app from the emulator, or clear its storage from Android Settings. The next launch will show two example tasks.
-
-## Backend extension point
-
-The repository now includes a Node.js/Express/MongoDB API under `server/`. It hashes passwords with bcrypt, issues JWT sessions, and scopes task CRUD to the authenticated user. Run it with:
-
-```bash
-cd server
-cp .env.example .env
-npm install
-npm run dev
-```
-
-The mobile app uses the API for registration, login, and authenticated task CRUD. The typed client is in `src/services/api.ts`. It defaults to `http://10.0.2.2:4000` for an Android emulator. For a physical phone, change `API_BASE_URL` to your computer's LAN IP, start the API, and keep the phone and computer on the same network. Local demo tasks are only used before a server session exists.
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Uninstall the app from the emulator, or clear its storage from Android Settings. The next launch shows the demo tasks when there is no authenticated session or cached task data. Authenticated tasks remain in MongoDB until they are deleted through the app or database.
