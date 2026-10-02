@@ -4,6 +4,57 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
+# TaskFlow
+
+TaskFlow is an Android-first React Native CLI app written in TypeScript. It demonstrates account registration, login, task creation, deadlines, priorities, filtering, completion, deletion, and local persistence.
+
+## Run on Android
+
+Prerequisites: Node 22+, Android Studio, an Android SDK, and either an emulator or a USB-connected device.
+
+```bash
+npm install
+npm start
+```
+
+In a second terminal:
+
+```bash
+npm run android
+```
+
+You can build the APK without an emulator:
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+## Learn the project
+
+- `App.tsx` is the entry point. It chooses between authentication and the task navigation stack.
+- `src/context/AppContext.tsx` is the shared state boundary, similar to a ViewModel shared by screens through React Context.
+- `src/screens` contains the auth, task-list, and add-task screens.
+- `src/services/storage.ts` contains the persistence adapter using AsyncStorage.
+- `src/types` contains the domain types used across the app.
+
+The UI uses React Native primitives such as `View`, `Text`, `TextInput`, `Pressable`, and `FlatList`. State updates replace much of the event-listener wiring you may know from Android Views.
+
+## Reset demo data
+
+Uninstall the app from the emulator, or clear its storage from Android Settings. The next launch will show two example tasks.
+
+## Backend extension point
+
+The app uses a local repository so it can be demonstrated offline. A future Node/Nest API can replace the implementation behind `src/services/storage.ts` while preserving its functions. A production backend must hash passwords and use token-based sessions instead of storing plain-text passwords.
+## Step 1: Start Metro
+
+First, you will need to run **Metro**, the JavaScript build tool for React Native.
+
+To start the Metro dev server, run the following command from the root of your React Native project:
+
+```sh
+# Using npm
 ## Step 1: Start Metro
 
 First, you will need to run **Metro**, the JavaScript build tool for React Native.
@@ -58,7 +109,7 @@ npm run ios
 yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+If everything is set up correctly, you should see your app running in the Android Emulator, iOS Simulator, or your connected device.
 
 This is one way to run your app — you can also build it directly from Android Studio or Xcode.
 
@@ -66,7 +117,7 @@ This is one way to run your app — you can also build it directly from Android 
 
 Now that you have successfully run the app, let's make changes!
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
 
 When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
 
