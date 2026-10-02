@@ -62,7 +62,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     Promise.all([loadUser(), loadTasks(), loadToken(), loadTheme()]).then(async ([storedUser, storedTasks, storedToken, storedTheme]) => {
-      setUser(storedUser);
+      setUser(storedUser && storedToken ? storedUser : null);
       if (storedUser && storedToken) {
         try {
           setTasks(await api.listTasks(storedToken));
