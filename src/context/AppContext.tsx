@@ -2,15 +2,17 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { Task, ThemeMode, User } from '../types';
 import {
-  checkPassword,
+  clearSession,
+  loadToken,
   loadTasks,
   loadTheme,
   loadUser,
+  saveSession,
   saveTasks,
-  saveUser,
   saveTheme,
 } from '../services/storage';
 import { getThemeColors } from '../theme';
+import { api } from '../services/api';
 
 const DEMO_TASKS: Task[] = [
   {
@@ -41,10 +43,10 @@ type AppContextValue = {
   setThemeMode: (mode: ThemeMode) => void;
   register: (email: string, password: string) => Promise<string | null>;
   login: (email: string, password: string) => Promise<string | null>;
-  logout: () => void;
-  addTask: (task: Omit<Task, 'id' | 'completed'>) => void;
-  toggleTask: (id: string) => void;
-  deleteTask: (id: string) => void;
+  logout: () => Promise<void>;
+  addTask: (task: Omit<Task, 'id' | 'completed'>) => Promise<void>;
+  toggleTask: (id: string) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
@@ -59,9 +61,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const themeColors = getThemeColors(isDark);
 
   useEffect(() => {
-    Promise.all([loadUser(), loadTasks(), loadTheme()]).then(([storedUser, storedTasks, storedTheme]) => {
+    Promise.all([loadUser(), loadTasks(), loadToken(), loadTheme()]).then(async ([storedUser, storedTasks, storedToken, storedTheme]) => {
       setUser(storedUser);
-      setTasks(storedTasks.length ? storedTasks : DEMO_TASKS);
+      if (storedUser && storedToken) {
+        try {
+          setTasks(await api.listTasks(storedToken));
+        } catch {
+          setTasks(storedTasks);
+        }
+      } else {
+        setTasks(storedTasks.length ? storedTasks : DEMO_TASKS);
+      }
       setThemeModeState(storedTheme);
       setReady(true);
     });
@@ -74,33 +84,64 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [tasks, ready]);
 
   async function register(email: string, password: string) {
-    if (password.length < 6) return 'Password must be at least 6 characters.';
-    const nextUser = { id: `user-${Date.now()}`, email: email.trim().toLowerCase() };
-    await saveUser(nextUser, password);
-    setUser(nextUser);
-    return null;
+    try {
+      const session = await api.register(email, password);
+      await saveSession(session.user, session.token);
+      setUser(session.user);
+      setTasks([]);
+      return null;
+    } catch (error) {
+      return error instanceof Error ? error.message : 'Unable to create account.';
+    }
   }
 
   async function login(email: string, password: string) {
-    const storedUser = await loadUser();
-    if (!storedUser || storedUser.email !== email.trim().toLowerCase()) {
-      return 'No account found for this email.';
+    try {
+      const session = await api.login(email, password);
+      await saveSession(session.user, session.token);
+      setUser(session.user);
+      setTasks(await api.listTasks(session.token));
+      return null;
+    } catch (error) {
+      return error instanceof Error ? error.message : 'Unable to log in.';
     }
-    if (!(await checkPassword(password))) return 'The password is incorrect.';
-    setUser(storedUser);
-    return null;
   }
 
-  function addTask(input: Omit<Task, 'id' | 'completed'>) {
-    setTasks(current => [{ ...input, id: `task-${Date.now()}`, completed: false }, ...current]);
+  async function addTask(input: Omit<Task, 'id' | 'completed'>) {
+    const token = await loadToken();
+    if (!token) {
+      setTasks(current => [{ ...input, id: `task-${Date.now()}`, completed: false }, ...current]);
+      return;
+    }
+    const task = await api.createTask(token, input);
+    setTasks(current => [task, ...current]);
   }
 
-  function toggleTask(id: string) {
-    setTasks(current => current.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
+  async function toggleTask(id: string) {
+    const currentTask = tasks.find(task => task.id === id);
+    const token = await loadToken();
+    if (!currentTask || !token) {
+      setTasks(current => current.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
+      return;
+    }
+    const updated = await api.updateTask(token, id, { completed: !currentTask.completed });
+    setTasks(current => current.map(task => task.id === id ? updated : task));
   }
 
-  function deleteTask(id: string) {
+  async function deleteTask(id: string) {
+    const token = await loadToken();
+    if (!token) {
+      setTasks(current => current.filter(task => task.id !== id));
+      return;
+    }
+    await api.deleteTask(token, id);
     setTasks(current => current.filter(task => task.id !== id));
+  }
+
+  async function logout() {
+    await clearSession();
+    setUser(null);
+    setTasks([]);
   }
 
   function setThemeMode(mode: ThemeMode) {
@@ -109,7 +150,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AppContext.Provider value={{ user, tasks, ready, themeMode, isDark, colors: themeColors, setThemeMode, register, login, logout: () => setUser(null), addTask, toggleTask, deleteTask }}>
+    <AppContext.Provider value={{ user, tasks, ready, themeMode, isDark, colors: themeColors, setThemeMode, register, login, logout, addTask, toggleTask, deleteTask }}>
       {children}
     </AppContext.Provider>
   );

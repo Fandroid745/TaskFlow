@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-The API runs on `http://localhost:4000`.
+The API runs on `http://localhost:4000`. Start Metro and the API before registering from the Android app. The emulator uses `10.0.2.2` to reach the host machine; a physical phone needs the host computer's LAN IP in `src/services/api.ts`.
 
 ## Endpoints
 

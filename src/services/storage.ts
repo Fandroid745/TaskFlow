@@ -4,6 +4,7 @@ import { Task, ThemeMode, User } from '../types';
 const KEYS = {
   user: '@taskflow/user',
   password: '@taskflow/password',
+  token: '@taskflow/token',
   tasks: '@taskflow/tasks',
   theme: '@taskflow/theme',
 };
@@ -17,6 +18,25 @@ export async function saveUser(user: User, password: string) {
   await Promise.all([
     AsyncStorage.setItem(KEYS.user, JSON.stringify(user)),
     AsyncStorage.setItem(KEYS.password, password),
+  ]);
+}
+
+export async function saveSession(user: User, token: string) {
+  await Promise.all([
+    AsyncStorage.setItem(KEYS.user, JSON.stringify(user)),
+    AsyncStorage.setItem(KEYS.token, token),
+  ]);
+}
+
+export async function loadToken() {
+  return AsyncStorage.getItem(KEYS.token);
+}
+
+export async function clearSession() {
+  await Promise.all([
+    AsyncStorage.removeItem(KEYS.user),
+    AsyncStorage.removeItem(KEYS.password),
+    AsyncStorage.removeItem(KEYS.token),
   ]);
 }
 

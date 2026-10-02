@@ -4,6 +4,7 @@ import { Priority, Task, User } from '../types';
 export const API_BASE_URL = 'http://10.0.2.2:4000';
 
 type AuthResponse = { token: string; user: User };
+type ApiTask = Omit<Task, 'id'> & { _id: string };
 
 type RequestOptions = { token?: string; method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown };
 
@@ -23,12 +24,16 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return response.status === 204 ? (undefined as T) : (await response.json()) as T;
 }
 
+function mapTask(task: ApiTask): Task {
+  return { ...task, id: task._id };
+}
+
 export const api = {
   register: (email: string, password: string) => request<AuthResponse>('/auth/register', { method: 'POST', body: { email, password } }),
   login: (email: string, password: string) => request<AuthResponse>('/auth/login', { method: 'POST', body: { email, password } }),
-  listTasks: (token: string) => request<Task[]>('/tasks', { token }),
-  createTask: (token: string, task: Omit<Task, 'id' | 'completed'>) => request<Task>('/tasks', { method: 'POST', token, body: task }),
-  updateTask: (token: string, id: string, changes: Partial<Task>) => request<Task>(`/tasks/${id}`, { method: 'PATCH', token, body: changes }),
+  listTasks: async (token: string) => (await request<ApiTask[]>('/tasks', { token })).map(mapTask),
+  createTask: async (token: string, task: Omit<Task, 'id' | 'completed'>) => mapTask(await request<ApiTask>('/tasks', { method: 'POST', token, body: task })),
+  updateTask: async (token: string, id: string, changes: Partial<Task>) => mapTask(await request<ApiTask>(`/tasks/${id}`, { method: 'PATCH', token, body: changes })),
   deleteTask: (token: string, id: string) => request<void>(`/tasks/${id}`, { method: 'DELETE', token }),
 };
 

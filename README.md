@@ -55,7 +55,7 @@ npm install
 npm run dev
 ```
 
-The mobile app remains local-first so the APK works offline. The typed API boundary is in `src/services/api.ts`; update `API_BASE_URL` for a physical phone and use those methods when switching the context from AsyncStorage to the server.
+The mobile app uses the API for registration, login, and authenticated task CRUD. The typed client is in `src/services/api.ts`. It defaults to `http://10.0.2.2:4000` for an Android emulator. For a physical phone, change `API_BASE_URL` to your computer's LAN IP, start the API, and keep the phone and computer on the same network. Local demo tasks are only used before a server session exists.
 ## Step 1: Start Metro
 
 First, you will need to run **Metro**, the JavaScript build tool for React Native.
