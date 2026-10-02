@@ -1,45 +1,32 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from 'react';
+import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppProvider, useApp } from './src/context/AppContext';
+import { AuthScreen } from './src/screens/AuthScreen';
+import { TasksScreen } from './src/screens/TasksScreen';
+import { AddTaskScreen } from './src/screens/AddTaskScreen';
+import { RootStackParamList } from './src/types';
+import { colors } from './src/theme';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  const { user, ready } = useApp();
+  if (!ready) return <View style={styles.loading}><ActivityIndicator color={colors.green} size="large" /></View>;
+  if (!user) return <AuthScreen />;
 
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
+  return <NavigationContainer><Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="Tasks" component={TasksScreen} />
+    <Stack.Screen name="AddTask" component={AddTaskScreen} />
+  </Stack.Navigator></NavigationContainer>;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+export default function App() {
+  return <SafeAreaProvider><StatusBar barStyle="dark-content" />
+    <AppProvider><AppContent /></AppProvider>
+  </SafeAreaProvider>;
+}
 
-export default App;
+const styles = StyleSheet.create({ loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper } });
