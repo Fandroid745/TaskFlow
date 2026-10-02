@@ -46,7 +46,16 @@ Uninstall the app from the emulator, or clear its storage from Android Settings.
 
 ## Backend extension point
 
-The app uses a local repository so it can be demonstrated offline. A future Node/Nest API can replace the implementation behind `src/services/storage.ts` while preserving its functions. A production backend must hash passwords and use token-based sessions instead of storing plain-text passwords.
+The repository now includes a Node.js/Express/MongoDB API under `server/`. It hashes passwords with bcrypt, issues JWT sessions, and scopes task CRUD to the authenticated user. Run it with:
+
+```bash
+cd server
+cp .env.example .env
+npm install
+npm run dev
+```
+
+The mobile app remains local-first so the APK works offline. The typed API boundary is in `src/services/api.ts`; update `API_BASE_URL` for a physical phone and use those methods when switching the context from AsyncStorage to the server.
 ## Step 1: Start Metro
 
 First, you will need to run **Metro**, the JavaScript build tool for React Native.
