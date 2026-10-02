@@ -1,7 +1,7 @@
 import { Priority, Task, User } from '../types';
 
 // Android emulator reaches the host machine through 10.0.2.2. Change this for a physical phone.
-export const API_BASE_URL = 'http://10.0.2.2:4000';
+export const API_BASE_URL = 'http://192.168.1.86:4000';
 
 type AuthResponse = { token: string; user: User };
 type ApiTask = Omit<Task, 'id'> & { _id: string };
